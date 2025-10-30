@@ -1,0 +1,11 @@
+the project is created to get a list of items as number like [1,2,1] and assign each index to each corresponding alphabet(0=>A) then create groups based on the related value from the array and append the number to them. for example the output of the above input will be A1,B1,B2,C1. after that we need to return combinations of them with N choose K algorithm based on "length" input. in this case if length is 2 the final output will be ["A1","B1"], ["A1", "B2"], ["A1", "C1"],["B1", "C1"], ["B2", "C1"]
+
+----in order to run the project locally
+1.make sure you have tools like npm,docker and node installed. docker should be running on windows mode
+2.run the command docker compose up (optionally add -d flag to the end of it) in the project directory
+3.run "npm i" to install the dependencies.
+4.run "npm run dev" to run the project locally
+
+Note: if you want to use your arbitrary password change docker-compose.yml and .env file and remove the volumes and containers in docker. then go through the steps again
+
+Note: if you want to browse the data you can install a tool like mySQL workbench and as the host enter local(127.0.0.1) and enter the username and password in docker-compose.yml file
