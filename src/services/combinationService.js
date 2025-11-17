@@ -21,26 +21,86 @@ function buildGroups(items) {
  * Returns: number[][] (each inner array is ascending indices)
  */
 // used for loop O(n) instread of recursion
-function chooseGroupIndices(n, k) {
-  if (k < 0 || k > n) return [];
-  if (k === 0) return [[]];
+function chooseGroupIndices(groupsLength, length) {
+  const result = [];
 
-  const res = [];
-  // initial combination: [0,1,...,k-1]
-  const comb = Array.from({ length: k }, (_, i) => i);
-
-  while (true) {
-    res.push(comb.slice());
-
-    // generate next combination in lexicographic order
-    let i = k - 1;
-    while (i >= 0 && comb[i] === n - k + i) i--;
-    if (i < 0) break;
-
-    comb[i]++;
-    for (let j = i + 1; j < k; j++) comb[j] = comb[j - 1] + 1;
+  // basic sanity checks
+  if (length <= 0 || length > groupsLength) {
+    return result;
   }
-  return res;
+
+  const combo = new Array(length);
+
+  // state variables
+  let phase = 0; // "Build the first combination"(0) -> "push the combination to resut"(1)
+  //   -> "find the position to increment and get to the next combination"(2)
+  // -> "after incrementing find the order"(3)
+  //for step 0
+  let initIndex = 0;
+  //for step 2 the default index to get started with is the last one
+  let indexToIncrement = -1;
+  //for step 3
+  let resetIndex = -1;
+
+  // single loop for the whole algorithm can use for(;;) as well
+  while (true) {
+    //first combo phase
+    if (phase === 0) {
+      // first fill the combination with each index as the value [0,1,2...,k-1]
+      combo[initIndex] = initIndex;
+      initIndex++;
+
+      if (initIndex === length) {
+        //after generating the first combination push it to resutl and go for finding the right position to increment
+        phase = 1;
+      }
+      continue;
+    }
+    //search for the position from right
+    if (phase === 1) {
+      // save the current combination
+      result.push(combo.slice());
+
+      indexToIncrement = length - 1;
+      phase = 2;
+      continue;
+    }
+
+    if (phase === 2) {
+      // nothing left
+      if (indexToIncrement < 0) {
+        break;
+      }
+
+      // the maximum value a position can take
+      const maxAtPos = groupsLength - (length - indexToIncrement);
+      if (combo[indexToIncrement] === maxAtPos) {
+        indexToIncrement--;
+        continue;
+      }
+
+      // we can bump this position
+      combo[indexToIncrement]++;
+      resetIndex = indexToIncrement + 1;
+      phase = 3;
+      continue;
+    }
+
+    if (phase === 3) {
+      // reset all positions to the right to be just after the previous one
+      if (resetIndex >= length) {
+        // tail is fixed, emit the next combination on next iteration
+        phase = 1;
+        continue;
+      }
+
+      combo[resetIndex] = combo[resetIndex - 1] + 1;
+      resetIndex++;
+      continue;
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -87,8 +147,6 @@ export function generateCombinations(items, length) {
     const prods = product(chosenGroups);
     combos.push(...prods);
   }
-
-  // Optional: stable sort for deterministic outputs (lexicographic by joined string)
   combos.sort((a, b) => a.join(",").localeCompare(b.join(",")));
   return combos;
 }
