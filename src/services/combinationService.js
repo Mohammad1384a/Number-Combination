@@ -20,17 +20,27 @@ function buildGroups(items) {
  * Choose k distinct group indices out of N (combinations of indices).
  * Returns: number[][] (each inner array is ascending indices)
  */
-function chooseGroupIndices(n, k, start = 0, picked = [], out = []) {
-  if (picked.length === k) {
-    out.push(picked.slice());
-    return out;
+// used for loop O(n) instread of recursion
+function chooseGroupIndices(n, k) {
+  if (k < 0 || k > n) return [];
+  if (k === 0) return [[]];
+
+  const res = [];
+  // initial combination: [0,1,...,k-1]
+  const comb = Array.from({ length: k }, (_, i) => i);
+
+  while (true) {
+    res.push(comb.slice());
+
+    // generate next combination in lexicographic order
+    let i = k - 1;
+    while (i >= 0 && comb[i] === n - k + i) i--;
+    if (i < 0) break;
+
+    comb[i]++;
+    for (let j = i + 1; j < k; j++) comb[j] = comb[j - 1] + 1;
   }
-  for (let i = start; i <= n - (k - picked.length); i++) {
-    picked.push(i);
-    chooseGroupIndices(n, k, i + 1, picked, out);
-    picked.pop();
-  }
-  return out;
+  return res;
 }
 
 /**
@@ -38,16 +48,20 @@ function chooseGroupIndices(n, k, start = 0, picked = [], out = []) {
  * [["A1","A2"], ["B1"], ["C1","C2"]] ->
  *   ["A1","B1","C1"], ["A1","B1","C2"], ["A2","B1","C1"], ["A2","B1","C2"]
  */
+//used for loop O(n) instread of reduce
 function product(arrays) {
   if (arrays.length === 0) return [];
-  return arrays.reduce(
-    (acc, cur) => {
-      const next = [];
-      for (const a of acc) for (const c of cur) next.push([...a, c]);
-      return next;
-    },
-    [[]]
-  );
+  let acc = [[]];
+  for (let i = 0; i < arrays.length; i++) {
+    const next = [];
+    for (let a = 0; a < acc.length; a++) {
+      for (let c = 0; c < arrays[i].length; c++) {
+        next.push([...acc[a], arrays[i][c]]);
+      }
+    }
+    acc = next;
+  }
+  return acc;
 }
 
 /**
